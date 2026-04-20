@@ -1,11 +1,11 @@
 import cv2
 import numpy as np
-import json
-import os
+from ..utils.config import ConfigManager
 
 class DeskCalibrator:
-    def __init__(self, camera_index=0):
+    def __init__(self, camera_index=0, config_manager=None):
         self.camera_index = camera_index
+        self.config = config_manager or ConfigManager()
         self.points = []
         self.window_name = "VISION-AIR Calibration - Click 4 Corners of your Desk"
         
@@ -62,30 +62,25 @@ class DeskCalibrator:
         cv2.destroyAllWindows()
 
     def save_and_preview(self, frame):
-        # Target dimensions (e.g., 1280x720)
         width, height = 1280, 720
         src_pts = np.float32(self.points)
         dst_pts = np.float32([[0, 0], [width, 0], [width, height], [0, height]])
         
         matrix = cv2.getPerspectiveTransform(src_pts, dst_pts)
         
-        # Preview warp
         warped = cv2.warpPerspective(frame, matrix, (width, height))
         cv2.imshow("Preview - Desk View (Warped)", warped)
         print("Previewing warped desk view. Press any key to confirm and save.")
         cv2.waitKey(0)
         
-        # Save config
-        config = {
+        config_data = {
             "camera_index": self.camera_index,
             "homography_matrix": matrix.tolist(),
             "desk_dims": [width, height]
         }
         
-        with open("config.json", "w") as f:
-            json.dump(config, f, indent=4)
-        
-        print("Configuration saved to config.json")
+        self.config.save(config_data)
+        print("Configuration saved via ConfigManager.")
 
 if __name__ == "__main__":
     calibrator = DeskCalibrator()

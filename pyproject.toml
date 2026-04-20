@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vision-air"
+version = "0.1.0"
+authors = [
+  { name="Chaitanya", email="author@example.com" },
+]
+description = "Virtual Spatial Peripheral system using Computer Vision."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "opencv-python",
+    "mediapipe",
+    "numpy",
+    "pynput",
+    "pyautogui",
+    "scipy",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.scripts]
+vision-air = "vision_air.main:main"
+vision-air-calibrate = "vision_air.core.calibration:main"
