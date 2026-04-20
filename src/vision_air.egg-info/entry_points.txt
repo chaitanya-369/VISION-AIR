@@ -1,0 +1,3 @@
+[console_scripts]
+vision-air = vision_air.main:main
+vision-air-calibrate = vision_air.core.calibration:main

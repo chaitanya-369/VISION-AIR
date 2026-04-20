@@ -1,0 +1,42 @@
+Metadata-Version: 2.4
+Name: vision-air
+Version: 0.1.0
+Summary: Virtual Spatial Peripheral system using Computer Vision.
+Author-email: Chaitanya <author@example.com>
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: opencv-python
+Requires-Dist: mediapipe
+Requires-Dist: numpy
+Requires-Dist: pynput
+Requires-Dist: pyautogui
+Requires-Dist: scipy
+
+# VISION-AIR (Virtual Spatial Interface)
+
+This project transforms any flat surface (desk) into a high-precision, multi-functional input device using only a standard overhead webcam.
+
+## Features
+- **Invisible UI**: Automatically switches between keyboard and gesture mouse modes.
+- **Perspective Correction**: Homography-based mapping for linear movement.
+- **Delta-Z Algorithm**: Depth velocity detection for virtual "collision" events (clicks/taps).
+- **One-Euro Filter**: Jitter-free, fluid cursor movement.
+
+## Tech Stack
+- Python 3.10+
+- OpenCV (cv2)
+- MediaPipe
+- NumPy
+- pynput / PyAutoGUI
+
+## Installation
+```bash
+pip install -r requirements.txt
+```
+
+## Hardware Target
+- Intel i5-8500T
+- Integrated Graphics
+- Standard Overhead Webcam (Nadir View)

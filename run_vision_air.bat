@@ -39,39 +39,53 @@ if "%choice%"=="3" goto install_deps
 if "%choice%"=="4" exit /b
 goto menu
 
-:calibrate
+:install_deps
 echo.
-echo [INFO] Starting Desk Calibration...
-echo [GUIDE] Click 4 corners (TL -> TR -> BR -> BL), then press 's' to save.
-python -m vision_air.core.calibration
+echo [INFO] Creating Virtual Environment (.venv)...
+python -m venv .venv
 if %errorlevel% neq 0 (
-    echo [ERROR] Calibration failed or was cancelled.
+    echo [ERROR] Failed to create venv. Make sure Python 3.12 is installed and in PATH.
     pause
-) else (
-    echo [SUCCESS] Calibration saved.
+    goto menu
 )
+
+echo [INFO] Activating Environment and Installing dependencies...
+call .venv\Scripts\activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+pip install -e .
+echo [SUCCESS] Dependencies installed in .venv.
+pause
 goto menu
 
 :start_system
+if not exist .venv (
+    echo [WARNING] Virtual Environment not found! Running Installation first...
+    goto install_deps
+)
 if not exist config.json (
     echo [WARNING] No calibration found! You must calibrate before starting.
     goto calibrate
 )
 echo.
-echo [INFO] launching VISION-AIR Engine...
-echo [INFO] Press 'q' in the camera window to quit safely.
+echo [INFO] Activating Environment...
+call .venv\Scripts\activate
+echo [INFO] Launching VISION-AIR Engine...
 python -m vision_air.main
 if %errorlevel% neq 0 (
-    echo [ERROR] System crashed or exited with an error.
+    echo [ERROR] System crashed.
     pause
 )
 goto menu
 
-:install_deps
+:calibrate
+if not exist .venv (
+    echo [WARNING] Virtual Environment not found! Running Installation first...
+    goto install_deps
+)
 echo.
-echo [INFO] Installing/Updating required libraries...
-pip install -r requirements.txt
-pip install -e .
-echo [SUCCESS] Dependencies installed.
-pause
+echo [INFO] Activating Environment...
+call .venv\Scripts\activate
+echo [INFO] Starting Desk Calibration...
+python -m vision_air.core.calibration
 goto menu
