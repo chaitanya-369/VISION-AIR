@@ -1,0 +1,19 @@
+# Auto-detect text files and perform line ending normalization
+* text=auto
+
+# Explicitly declare Python files
+*.py linguist-language=Python
+
+# Mark documentation as such (so it doesn't skew stats as much)
+docs/* linguist-documentation
+LICENSE linguist-documentation
+README.md linguist-documentation
+
+# Mark vendor/junk as hidden or vendored
+.venv/* linguist-vendored
+__pycache__/* linguist-vendored
+*.pyc linguist-vendored
+*.task linguist-vendored
+
+# Project binary assets
+assets/models/*.task binary
