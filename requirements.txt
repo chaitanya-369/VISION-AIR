@@ -4,3 +4,4 @@ numpy
 pynput
 pyautogui
 scipy
+PyQt5
