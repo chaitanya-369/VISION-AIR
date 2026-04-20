@@ -1,15 +1,26 @@
 from pynput.mouse import Button, Controller as MouseController
+from pynput.keyboard import Controller as KeyboardController
 import pyautogui
 import numpy as np
+import winsound # For audio feedback proxy
 
 class HIDController:
     def __init__(self, desk_dims):
         self.mouse = MouseController()
+        self.keyboard = KeyboardController()
         self.desk_w, self.desk_h = desk_dims
         self.screen_w, self.screen_h = pyautogui.size()
         
         self.is_pinched = False
         print(f"HIDController initialized. Mapping {desk_dims} desk to {self.screen_w}x{self.screen_h} screen.")
+
+    def type_key(self, char):
+        if char:
+            self.keyboard.press(char)
+            self.keyboard.release(char)
+            # Proxy audio feedback: 2000Hz for 10ms
+            winsound.Beep(2000, 10)
+            print(f"Typed: {char}")
 
     def map_absolute(self, desk_x, desk_y):
         # Map desk [0, W] to screen [0, W_s]
