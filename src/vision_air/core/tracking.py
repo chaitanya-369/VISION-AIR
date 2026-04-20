@@ -31,6 +31,23 @@ class TrackingEngine:
         dst_pt = cv2.perspectiveTransform(src_pt, self.config.homography_matrix)
         return dst_pt[0][0]
 
+    def calculate_pinch(self, landmarks):
+        # 4 = Thumb Tip, 8 = Index Tip
+        thumb = landmarks.landmark[4]
+        index = landmarks.landmark[8]
+        
+        # 0 = Wrist, 5 = Index MCP (Palm scale proxy)
+        wrist = landmarks.landmark[0]
+        mcp = landmarks.landmark[5]
+        
+        # Euclidean distances
+        pinch_dist = np.linalg.norm(np.array([thumb.x - index.x, thumb.y - index.y, thumb.z - index.z]))
+        palm_dist = np.linalg.norm(np.array([wrist.x - mcp.x, wrist.y - mcp.y, wrist.z - mcp.z]))
+        
+        # Normalize distance (typical pinch is < 0.15 normalized)
+        normalized_dist = pinch_dist / palm_dist
+        return normalized_dist < 0.15 # Tunable threshold
+
     def process_frame(self, frame):
         h, w, _ = frame.shape
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -47,9 +64,12 @@ class TrackingEngine:
                 smooth_y = self.filters['y'].filter(desk_y)
                 smooth_z = self.filters['z'].filter(itip.z)
                 
+                pinch_active = self.calculate_pinch(hand_landmarks)
+                
                 tracked_data.append({
                     'raw': [desk_x, desk_y, itip.z],
                     'smooth': [smooth_x, smooth_y, smooth_z],
+                    'pinch_active': pinch_active,
                     'landmarks': hand_landmarks
                 })
                 
