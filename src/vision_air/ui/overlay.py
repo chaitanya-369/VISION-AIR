@@ -83,18 +83,19 @@ class OverlayWindow(QMainWindow):
             px, py = rx * w, ry * h
             
             # Cursor Ring
-            radius = 15 - (sz * 50)
-            radius = max(5, min(radius, 40))
+            # Fixed radius for better stability, no longer pulsing with 'sz'
+            radius = 18
             
-            color = self.color_hit if hand.get('pinch_active') else self.color_accent
+            # Highlight color when in mouse pose
+            color = self.color_accent if hand.get('mouse_pose') else QColor(130, 130, 130, 100)
             
             painter.setBrush(Qt.NoBrush)
-            painter.setPen(QPen(color, 2))
+            painter.setPen(QPen(color, 2, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
             painter.drawEllipse(QPoint(int(px), int(py)), int(radius), int(radius))
             
             # Center dot
             painter.setBrush(QBrush(color))
-            painter.drawEllipse(QPoint(int(px), int(py)), 3, 3)
+            painter.drawEllipse(QPoint(int(px), int(py)), 4, 4)
 
 def run_overlay_app(desk_dims, data_queue):
     app = QApplication(sys.argv)

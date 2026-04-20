@@ -11,8 +11,16 @@ class HIDController:
         self.desk_w, self.desk_h = desk_dims
         self.screen_w, self.screen_h = pyautogui.size()
         
-        self.is_pinched = False
-        print(f"HIDController initialized. Mapping {desk_dims} desk to {self.screen_w}x{self.screen_h} screen.")
+        self.is_pressed = False
+        self.enabled = True
+        
+        # Physics State
+        self.last_desk_pos = None
+        self.sensitivity = 1.2
+        self.accel_exponent = 1.15 # Curve for mouse acceleration
+        self.min_delta = 0.5        # Sub-pixel threshold
+        
+        print(f"HIDController initialized (Relative Mode). Sensitivity: {self.sensitivity}")
 
     def type_key(self, char):
         if char:
@@ -34,17 +42,80 @@ class HIDController:
         return screen_x, screen_y
 
     def move_to(self, desk_x, desk_y):
-        screen_x, screen_y = self.map_absolute(desk_x, desk_y)
-        self.mouse.position = (screen_x, screen_y)
+        """
+        Processes a desk coordinate as a relative displacement for the mouse.
+        """
+        if not self.enabled:
+            return
+            
+        if self.last_desk_pos is None:
+            self.last_desk_pos = (desk_x, desk_y)
+            return
 
-    def update_click_state(self, pinch_active):
-        if pinch_active and not self.is_pinched:
-            # Pinch started -> Press
+        # 1. Calculate displacement in desk units
+        dx = desk_x - self.last_desk_pos[0]
+        dy = desk_y - self.last_desk_pos[1]
+        self.last_desk_pos = (desk_x, desk_y)
+
+        # 2. Scale to screen pixels (Approximate 1:1 at base sensitivity)
+        # We use desk_w as a normalization factor
+        px_x = (dx / self.desk_w) * self.screen_w * self.sensitivity
+        px_y = (dy / self.desk_h) * self.screen_h * self.sensitivity
+        
+        dist = np.sqrt(px_x**2 + px_y**2)
+        if dist < self.min_delta:
+            return
+
+        # 3. Apply Mouse Acceleration Curve
+        # Formula: pixel_delta = base_delta * (distance ^ curve)
+        # Low distance -> base delta (precise)
+        # High distance -> magnified delta (fast)
+        accel = (dist ** self.accel_exponent) / (dist if dist > 0 else 1)
+        
+        final_dx = px_x * accel
+        final_dy = px_y * accel
+
+        # 4. Inject relative movement
+        self.mouse.move(int(final_dx), int(final_dy))
+
+    def reset_cursor(self):
+        """Clears the reference position (used when hand is lifted)."""
+        self.last_desk_pos = None
+
+    def update_click_state(self, button_active):
+        if not self.enabled:
+            self.release_buttons()
+            return
+
+        if button_active and not self.is_pressed:
+            # Click started -> Press
             self.mouse.press(Button.left)
-            self.is_pinched = True
+            self.is_pressed = True
             print("Mouse Press")
-        elif not pinch_active and self.is_pinched:
-            # Pinch released -> Release
+        elif not button_active and self.is_pressed:
+            # Click released -> Release
             self.mouse.release(Button.left)
-            self.is_pinched = False
+            self.is_pressed = False
             print("Mouse Release")
+
+    def click(self, button_name):
+        if not self.enabled:
+            return
+
+        self.release_buttons()
+        button = Button.right if button_name == "right" else Button.left
+        self.mouse.click(button, 1)
+        print(f"Mouse {button_name.title()} Click")
+
+    def release_buttons(self):
+        if self.is_pressed:
+            self.mouse.release(Button.left)
+            self.is_pressed = False
+            print("Mouse Release")
+
+    def set_enabled(self, enabled):
+        self.enabled = enabled
+        if not enabled:
+            self.release_buttons()
+            self.last_desk_pos = None
+        print(f"HID {'enabled' if enabled else 'disabled'}")
