@@ -6,11 +6,13 @@ class LowPassFilter:
         self.alpha = alpha
         self.prev_value = None
 
-    def filter(self, value):
+    def filter(self, value, alpha=None):
+        if alpha is None:
+            alpha = self.alpha
         if self.prev_value is None:
             self.prev_value = value
             return value
-        filtered = self.alpha * value + (1 - self.alpha) * self.prev_value
+        filtered = alpha * value + (1 - alpha) * self.prev_value
         self.prev_value = filtered
         return filtered
 
@@ -54,13 +56,3 @@ class OneEuroFilter:
     # LowPassFilter.filter only takes one arg but I need it to use the dynamic alpha.
     # Let me fix LowPassFilter to allow dynamic alpha.
 
-class DynamicLowPassFilter(LowPassFilter):
-    def filter(self, value, alpha=None):
-        if alpha is None:
-            alpha = self.alpha
-        if self.prev_value is None:
-            self.prev_value = value
-            return value
-        filtered = alpha * value + (1 - alpha) * self.prev_value
-        self.prev_value = filtered
-        return filtered
