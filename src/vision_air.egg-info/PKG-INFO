@@ -8,7 +8,8 @@ Classifier: Operating System :: OS Independent
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
 Requires-Dist: opencv-python
-Requires-Dist: mediapipe
+Requires-Dist: mediapipe>=0.10.0
+Requires-Dist: protobuf<4.25.0
 Requires-Dist: numpy
 Requires-Dist: pynput
 Requires-Dist: pyautogui

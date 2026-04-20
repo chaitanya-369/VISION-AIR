@@ -18,4 +18,5 @@ src/vision_air/input/controller.py
 src/vision_air/ui/overlay.py
 src/vision_air/utils/__init__.py
 src/vision_air/utils/config.py
+src/vision_air/utils/downloader.py
 src/vision_air/utils/filters.py
