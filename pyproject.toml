@@ -24,6 +24,9 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
+[tool.setuptools.packages.find]
+where = ["src"]
+
 [project.scripts]
 vision-air = "vision_air.main:main"
 vision-air-calibrate = "vision_air.core.calibration:main"

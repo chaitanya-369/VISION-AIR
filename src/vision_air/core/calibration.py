@@ -16,44 +16,52 @@ class DeskCalibrator:
                 print(f"Point {len(self.points)} recorded: {x, y}")
 
     def run(self):
+        print("\nCAMERA SETUP:")
+        print("Press 'c' to cycle through available camera indices.")
+        print("Press 'i' to enter an IP Camera URL (e.g., http://192.168.1.5:4747/video)")
+        
         cap = cv2.VideoCapture(self.camera_index)
-        if not cap.isOpened():
-            print("Error: Could not open camera.")
-            return
-
+        
         cv2.namedWindow(self.window_name)
         cv2.setMouseCallback(self.window_name, self.mouse_callback)
-
-        print("\nINSTRUCTIONS:")
-        print("1. Click the TOP-LEFT corner of your desk.")
-        print("2. Click the TOP-RIGHT corner of your desk.")
-        print("3. Click the BOTTOM-RIGHT corner of your desk.")
-        print("4. Click the BOTTOM-LEFT corner of your desk.")
-        print("Press 'r' to reset points, 'q' to quit, 's' to save (after 4 points).")
 
         while True:
             ret, frame = cap.read()
             if not ret:
-                break
+                cv2.putText(frame, f"FAILED TO OPEN CAMERA {self.camera_index}", (50, 50), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+                cv2.imshow(self.window_name, np.zeros((480, 640, 3), dtype=np.uint8))
+            else:
+                # Draw recorded points
+                for p in self.points:
+                    cv2.circle(frame, tuple(p), 5, (0, 255, 0), -1)
+                
+                if len(self.points) == 4:
+                    pts = np.array(self.points, np.int32)
+                    cv2.polylines(frame, [pts], True, (255, 0, 0), 2)
+                    cv2.putText(frame, "Press 's' to save and preview", (10, 30), 
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
-            # Draw recorded points
-            for p in self.points:
-                cv2.circle(frame, tuple(p), 5, (0, 255, 0), -1)
-            
-            # Connect points with lines if all 4 are selected
-            if len(self.points) == 4:
-                pts = np.array(self.points, np.int32)
-                cv2.polylines(frame, [pts], True, (255, 0, 0), 2)
-                cv2.putText(frame, "Press 's' to save and preview", (10, 30), 
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-
-            cv2.imshow(self.window_name, frame)
+                cv2.imshow(self.window_name, frame)
             
             key = cv2.waitKey(1) & 0xFF
             if key == ord('q'):
                 break
             elif key == ord('r'):
                 self.points = []
+            elif key == ord('c'):
+                # Cycle camera index
+                self.camera_index = (self.camera_index + 1) % 5
+                cap.release()
+                cap = cv2.VideoCapture(self.camera_index)
+                print(f"Switched to Camera Index: {self.camera_index}")
+            elif key == ord('i'):
+                # IP Camera URL Input
+                url = input("\nEnter IP Camera URL: ")
+                if url:
+                    self.camera_index = url
+                    cap.release()
+                    cap = cv2.VideoCapture(self.camera_index)
             elif key == ord('s') and len(self.points) == 4:
                 self.save_and_preview(frame)
                 break
